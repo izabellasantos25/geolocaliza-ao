@@ -1,24 +1,45 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+if ('ServiceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try{
+      let reg;
+      reg = await navigator.serviceWorker.register('/sw.js', { type: "module "});
+      console.log('Service worker registrada!', reg);
+    } catch (err) {
+      console.log('Service worker registro falhou: ', err);
+    }
+  })
+}
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+let posicaoInicial;
+const capturarLocalizacao = document.getElementById('localizacao');
+const latitude = document.getElementById('latitude');
+const longitude = document.getElementById('longitude');
 
-setupCounter(document.querySelector('#counter'))
+const sucesso = (posicao) => {
+  posicaoInicial = posicao;
+  latitude.innerHTML = posicaoInicial.coords.latitude;
+  longitude.innerHTML = posicaoInicial.coords.longitude;
+};
+
+const erro = (error) => {
+  let errorMessage;
+  switch(error.code){
+    case 0:
+      errorMessage = "Erro desconhecido"
+    break;
+    case 1:
+      errorMessage = "Permissão negada!"
+    break;
+    case 2:
+      errorMessage = "Captura de posiç indisponível!"
+    break;
+    case 3:
+      errorMessage = "Tempo de solicitação excedido!"
+    break;
+  };
+  console.log('Ocorreu um erro: ' + errorMessage);
+};
+
+capturarLocalizacao.addEventListener('click', () => {
+  navigator.geolocation.getCurrentPosition(sucesso, erro);
+});
